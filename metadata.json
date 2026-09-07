@@ -1,0 +1,6 @@
+{
+  "name": "EQX Empower Solutions",
+  "description": "Empresa de prestação de serviços especializados em Energias Renováveis, Metalomecânica e Construção Naval.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
