@@ -1,6 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Language, ApplicationFormData } from '../types';
 import { TRANSLATIONS, JOB_VACANCIES } from '../data/content';
+import {
+  fetchOpenings,
+  submitApplication,
+  isLiveMode,
+  JobsApiError,
+  type LiveJobOpening,
+} from '../lib/chegattaJobs';
 
 interface RecruitmentSectionProps {
   currentLang: Language;
@@ -14,7 +21,47 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
   onApplicationSuccess
 }) => {
   const t = TRANSLATIONS[currentLang];
-  const vacancies = JOB_VACANCIES[currentLang];
+  const liveMode = isLiveMode();
+
+  // Live vacancies from the Chegatta hiring pipeline. Null = not loaded
+  // (or live mode off) → the static featured list below is used instead,
+  // so the section never renders empty.
+  const [liveJobs, setLiveJobs] = useState<LiveJobOpening[] | null>(null);
+  const [jobsError, setJobsError] = useState<string | null>(null);
+  const [selectedLiveJobId, setSelectedLiveJobId] = useState<number | null>(null);
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!liveMode) return;
+    const ctrl = new AbortController();
+    fetchOpenings(ctrl.signal)
+      .then((feed) => {
+        setLiveJobs(feed.jobs);
+        setJobsError(null);
+      })
+      .catch((err) => {
+        if ((err as Error)?.name === 'AbortError') return;
+        setLiveJobs(null);
+        setJobsError(t.careers.liveLoadError);
+      });
+    return () => ctrl.abort();
+  }, [liveMode, t]);
+
+  const vacancies = liveJobs !== null
+    ? liveJobs.map((job) => ({
+        id: `live-${job.id}`,
+        title: job.title,
+        department: '',
+        location: '',
+        contractType: '',
+        status: (currentLang === 'pt' ? 'Ativa' : 'Active') as 'Ativa' | 'Active',
+        icon: 'work',
+        accentColor: 'amber' as const,
+      }))
+    : JOB_VACANCIES[currentLang];
+
+  const selectedLiveJob = liveJobs?.find((j) => j.id === selectedLiveJobId) ?? null;
 
   const [formData, setFormData] = useState<ApplicationFormData>({
     fullName: '',
@@ -38,24 +85,33 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const keepFile = (file: File | undefined) => {
+    if (!file) return;
+    setCvFile(file);
+    setFormData({ ...formData, cvFileName: file.name });
+  };
+
+  const clearFile = () => {
+    setCvFile(null);
+    setFormData({ ...formData, cvFileName: null });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, cvFileName: e.target.files[0].name });
-    }
+    keepFile(e.target.files?.[0]);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFormData({ ...formData, cvFileName: e.dataTransfer.files[0].name });
-    }
+    keepFile(e.dataTransfer.files?.[0]);
   };
 
-  const handleSelectVacancy = (title: string, dept: string) => {
+  const handleSelectVacancy = (liveJobId: number | null, title: string, dept: string) => {
+    setSelectedLiveJobId(liveJobId);
+    setSubmitError(null);
     setFormData(prev => ({
       ...prev,
-      primaryArea: dept,
+      primaryArea: dept || prev.primaryArea,
       experience: prev.experience ? `${prev.experience}\n[Candidatura à vaga: ${title}]` : `[Candidatura à vaga: ${title}]`
     }));
 
@@ -66,7 +122,7 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.email || !formData.phone) {
       alert('Por favor, preencha todos os campos obrigatórios (*).');
@@ -77,12 +133,45 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
       return;
     }
 
+    // Live mode with a chosen vacancy: real application into the Chegatta
+    // hiring pipeline. Anything else keeps the legacy preview behaviour
+    // (static site without a configured business token).
+    if (!(liveMode && selectedLiveJob)) {
+      if (liveMode) {
+        setSubmitError(t.careers.chooseVacancy);
+        return;
+      }
+      setIsSubmitting(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setSubmitted(true);
+        onApplicationSuccess();
+      }, 1200);
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setSubmitError(null);
+    try {
+      await submitApplication(selectedLiveJob, {
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        notes: formData.experience || undefined,
+        cv: cvFile,
+      });
       setSubmitted(true);
       onApplicationSuccess();
-    }, 1200);
+    } catch (err) {
+      if (err instanceof JobsApiError && err.status === 422 && Object.keys(err.fields).length > 0) {
+        const first = Object.entries(err.fields)[0];
+        setSubmitError(`${first[0]}: ${first[1].join(', ')}`);
+      } else {
+        setSubmitError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -121,6 +210,12 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
               </span>
             </div>
 
+            {jobsError ? (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-body text-xs">
+                {jobsError}
+              </div>
+            ) : null}
+
             {vacancies.map(job => (
               <div
                 key={job.id}
@@ -128,9 +223,11 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <span className="font-space-grotesk text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider block mb-1">
-                      {job.department}
-                    </span>
+                    {job.department ? (
+                      <span className="font-space-grotesk text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider block mb-1">
+                        {job.department}
+                      </span>
+                    ) : null}
                     <h4 className="font-epilogue text-base font-bold text-white group-hover:text-[#ffc174] transition-colors">
                       {job.title}
                     </h4>
@@ -140,18 +237,25 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-slate-400 mb-4 font-space-grotesk">
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">pin_drop</span>
-                  <span>{job.location}</span>
-                </div>
+                {job.location ? (
+                  <div className="flex items-center gap-2 text-xs text-slate-400 mb-4 font-space-grotesk">
+                    <span className="material-symbols-outlined text-[16px] text-slate-500">pin_drop</span>
+                    <span>{job.location}</span>
+                  </div>
+                ) : null}
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                  <span className="font-space-grotesk text-[11px] text-slate-400 font-medium">
-                    {job.contractType}
-                  </span>
+                <div className="flex items-center justify-between pt-3 border-t border-gray-500/10">
+                  {job.contractType ? (
+                    <span className="font-space-grotesk text-[11px] text-slate-400 font-medium">
+                      {job.contractType}
+                    </span>
+                  ) : <span />}
                   <button
                     type="button"
-                    onClick={() => handleSelectVacancy(job.title, job.department)}
+                    onClick={() => {
+                      const m = /^live-(\d+)$/.exec(job.id);
+                      handleSelectVacancy(m ? Number(m[1]) : null, job.title, job.department);
+                    }}
                     className="inline-flex items-center gap-1.5 text-xs font-epilogue font-bold text-[#f59e0b] hover:text-[#fbbf24] hover:underline transition-all"
                   >
                     <span>Candidatar</span>
@@ -219,6 +323,9 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
                   type="button"
                   onClick={() => {
                     setSubmitted(false);
+                    setSubmitError(null);
+                    setSelectedLiveJobId(null);
+                    setCvFile(null);
                     setFormData({
                       fullName: '',
                       phone: '',
@@ -228,6 +335,7 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
                       cvFileName: null,
                       gdprAccepted: true
                     });
+                    if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
                   className="px-6 py-2.5 rounded-xl bg-[#191c21] hover:bg-white/10 text-white font-epilogue text-sm font-semibold border border-white/10 transition-colors"
                 >
@@ -345,9 +453,10 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
                         <span className="font-semibold">{formData.cvFileName}</span>
                         <button
                           type="button"
-                          onClick={e => {
+                            onClick={e => {
                             e.stopPropagation();
-                            setFormData({ ...formData, cvFileName: null });
+                            clearFile();
+                            if (fileInputRef.current) fileInputRef.current.value = '';
                           }}
                           className="text-slate-400 hover:text-rose-400 ml-2"
                         >
@@ -385,6 +494,18 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
                     processos de recrutamento e mobilidade internacional da EQX.
                   </label>
                 </div>
+
+                {selectedLiveJob ? (
+                  <div className="p-3 rounded-xl bg-[#06b6d4]/10 border border-[#06b6d4]/30 text-[#4cd7f6] font-space-grotesk text-xs font-semibold">
+                    {t.careers.applyingTo.replace('{title}', selectedLiveJob.title)}
+                  </div>
+                ) : null}
+
+                {submitError ? (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-body text-xs">
+                    {submitError}
+                  </div>
+                ) : null}
 
                 {/* Submit Action */}
                 <button

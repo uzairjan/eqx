@@ -415,7 +415,10 @@ export const TRANSLATIONS = {
       submitBtn: 'Submeter Candidatura Espontânea →',
       gdpr: 'Dados protegidos pelo RGPD',
       whatsapp: 'Linha WhatsApp de Apoio',
-      applySuccess: 'Candidatura submetida com sucesso! A equipa de recrutamento da EQX entrará em contacto nas próximas 24 horas.'
+      applySuccess: 'Candidatura submetida com sucesso! A equipa de recrutamento da EQX entrará em contacto nas próximas 24 horas.',
+      liveLoadError: 'Não foi possível carregar as vagas em direto — a mostrar vagas em destaque.',
+      chooseVacancy: 'Escolha primeiro uma vaga acima (botão Candidatar).',
+      applyingTo: 'Candidatura a: {title}',
     },
     europe: {
       eyebrow: '[ 05 // LOGÍSTICA & PRESENÇA ]',
@@ -602,7 +605,10 @@ export const TRANSLATIONS = {
       submitBtn: 'Submit Spontaneous Application →',
       gdpr: 'Protected under EU GDPR regulations',
       whatsapp: 'WhatsApp Support Line',
-      applySuccess: 'Application submitted successfully! The EQX recruitment team will reach out within 24 hours.'
+      applySuccess: 'Application submitted successfully! The EQX recruitment team will reach out within 24 hours.',
+      liveLoadError: 'Could not load live vacancies — showing featured openings.',
+      chooseVacancy: 'Please choose a vacancy above first (Apply button).',
+      applyingTo: 'Applying to: {title}',
     },
     europe: {
       eyebrow: '[ 05 // PRESENCE & LOGISTICS ]',
