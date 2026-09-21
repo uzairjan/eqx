@@ -42,6 +42,54 @@ export interface ApplicationResult {
   stage: string;
 }
 
+import { useEffect, useState } from 'react';
+
+/**
+ * Shared live-feed state for job pages. In static preview mode (no token)
+ * it resolves immediately with a null feed and the pages fall back to the
+ * bundled featured vacancies.
+ */
+export function useLiveJobs() {
+  const [feed, setFeed] = useState<LiveFeed | null>(null);
+  const [loading, setLoading] = useState<boolean>(isLiveMode());
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLiveMode()) {
+      setLoading(false);
+      return;
+    }
+    const ctrl = new AbortController();
+    fetchOpenings(ctrl.signal)
+      .then((f) => {
+        setFeed(f);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if ((err as Error)?.name === 'AbortError') return;
+        setError(err instanceof Error ? err.message : String(err));
+        setLoading(false);
+      });
+    return () => ctrl.abort();
+  }, []);
+
+  return { feed, loading, error, liveMode: isLiveMode() };
+}
+
+/**
+ * Route id helpers. Live openings are addressed as `live-{numericId}`
+ * (e.g. /vaga/live-2); static featured entries keep their slug ids.
+ * This keeps one URL scheme for both data sources.
+ */
+export function toRouteId(job: LiveJobOpening): string {
+  return `live-${job.id}`;
+}
+
+export function parseRouteId(routeId: string): { liveId: number } | { slug: string } {
+  const m = /^live-(\d+)$/.exec(routeId || '');
+  return m ? { liveId: Number(m[1]) } : { slug: routeId };
+}
+
 export class JobsApiError extends Error {
   status: number;
   fields: Record<string, string[]>;

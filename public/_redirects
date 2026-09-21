@@ -1,0 +1,4 @@
+# Client-side routes (react-router) must serve index.html on static hosts
+# that support redirect files (Cloudflare Pages, Netlify).
+/vaga/*  /index.html  200
+/candidatura/*  /index.html  200

@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Language } from './types';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -17,10 +18,107 @@ import { Footer } from './components/Footer';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { B2BModal } from './components/B2BModal';
 import { Toast } from './components/Toast';
+import { JobDetailPage } from './pages/JobDetailPage';
+import { ApplyPage } from './pages/ApplyPage';
+
+/**
+ * Scrolls to `#hash` targets after client-side navigation (react-router
+ * does not do this natively) and resets scroll on plain page changes.
+ */
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
+
+  React.useEffect(() => {
+    if (hash) {
+      const t = setTimeout(() => {
+        document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' });
+      }, 120);
+      return () => clearTimeout(t);
+    }
+    window.scrollTo({ top: 0 });
+  }, [pathname, hash]);
+
+  return null;
+}
+
+function NotFound({ currentLang }: { currentLang: Language }) {
+  React.useEffect(() => {
+    document.title = 'EQX — 404';
+  }, []);
+  return (
+    <div className="min-h-screen bg-[#07090e] text-[#e2e2ea] flex items-center justify-center px-4">
+      <div className="text-center">
+        <h1 className="font-epilogue text-4xl font-bold text-white mb-2">404</h1>
+        <p className="font-body text-slate-400 mb-6">
+          {currentLang === 'pt' ? 'Página não encontrada.' : 'Page not found.'}
+        </p>
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ea580c] text-[#331c00] font-epilogue font-bold text-sm"
+        >
+          EQX
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function HomePage({
+  currentLang,
+  showToast,
+  onRequestProposal,
+}: {
+  currentLang: Language;
+  showToast: (message: string) => void;
+  onRequestProposal: () => void;
+}) {
+  React.useEffect(() => {
+    document.title = 'EQX Empower Solutions';
+  }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <main className="flex-1">
+      <HeroSection
+        currentLang={currentLang}
+        onApplyClick={() => scrollToSection('recrutamento')}
+        onExploreSectorsClick={() => scrollToSection('areas-de-atuacao')}
+      />
+
+      <StatsSection currentLang={currentLang} />
+
+      <SectorsSection
+        currentLang={currentLang}
+        onApplyForSector={() => {
+          scrollToSection('recrutamento');
+        }}
+      />
+
+      <TurnkeyModelSection
+        currentLang={currentLang}
+        onRequestProposal={onRequestProposal}
+      />
+
+      <RecruitmentSection currentLang={currentLang} />
+
+      <EuropeMapSection currentLang={currentLang} />
+
+      <ContactsSection
+        currentLang={currentLang}
+        onOpenInquiry={onRequestProposal}
+      />
+    </main>
+  );
+}
 
 export default function App() {
   const [currentLang, setCurrentLang] = useState<Language>('pt');
-  const [preselectedArea, setPreselectedArea] = useState<string>('Energias Renováveis');
   const [b2bModalOpen, setB2bModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -31,94 +129,65 @@ export default function App() {
     }, 4500);
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleApplyClick = () => {
-    scrollToSection('recrutamento');
-  };
-
-  const handleExploreSectors = () => {
-    scrollToSection('areas-de-atuacao');
-  };
-
-  const handleApplyForSector = (sectorTitle: string) => {
-    setPreselectedArea(sectorTitle);
-    scrollToSection('recrutamento');
-  };
-
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e2e2ea] flex flex-col selection:bg-[#f59e0b] selection:text-[#613b00] font-body relative">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
+    <BrowserRouter>
+      <div className="min-h-screen bg-[#07090e] text-[#e2e2ea] flex flex-col selection:bg-[#f59e0b] selection:text-[#613b00] font-body relative">
+        <ScrollManager />
+        {/* Toast Notification */}
+        {toastMessage && (
+          <Toast
+            message={toastMessage}
+            onClose={() => setToastMessage(null)}
+          />
+        )}
 
-      {/* Fixed Header */}
-      <Header
-        currentLang={currentLang}
-        onLanguageChange={setCurrentLang}
-        onOpenCandidatePortal={handleApplyClick}
-      />
-
-      {/* Main Content Sections */}
-      <main className="flex-1">
-        <HeroSection
+        {/* Fixed Header */}
+        <Header
           currentLang={currentLang}
-          onApplyClick={handleApplyClick}
-          onExploreSectorsClick={handleExploreSectors}
+          onLanguageChange={setCurrentLang}
+          onOpenCandidatePortal={() => {
+            // Works from any page (full reload only off-home; same-page
+            // stays a smooth client-side scroll).
+            if (window.location.pathname !== '/') {
+              window.location.href = '/#recrutamento';
+            } else {
+              document.getElementById('recrutamento')?.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
         />
 
-        <StatsSection currentLang={currentLang} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                currentLang={currentLang}
+                showToast={showToast}
+                onRequestProposal={() => setB2bModalOpen(true)}
+              />
+            }
+          />
+          <Route path="/vaga/:jobId" element={<JobDetailPage currentLang={currentLang} />} />
+          <Route path="/candidatura/:jobId" element={<ApplyPage currentLang={currentLang} />} />
+          <Route path="*" element={<NotFound currentLang={currentLang} />} />
+        </Routes>
 
-        <SectorsSection
+        {/* Corporate Footer */}
+        <Footer currentLang={currentLang} />
+
+        {/* Persistent / Floating Cookie Consent Banner */}
+        <CookieConsentBanner currentLang={currentLang} />
+
+        {/* B2B Turnkey Proposal Modal */}
+        <B2BModal
+          isOpen={b2bModalOpen}
+          onClose={() => setB2bModalOpen(false)}
           currentLang={currentLang}
-          onApplyForSector={handleApplyForSector}
+          onSuccess={() => {
+            showToast('Pedido de proposta empresarial enviado com sucesso!');
+          }}
         />
-
-        <TurnkeyModelSection
-          currentLang={currentLang}
-          onRequestProposal={() => setB2bModalOpen(true)}
-        />
-
-        <RecruitmentSection
-          currentLang={currentLang}
-          preselectedArea={preselectedArea}
-          onApplicationSuccess={() =>
-            showToast('Candidatura submetida com sucesso! A equipa de recrutamento entrará em contacto.')
-          }
-        />
-
-        <EuropeMapSection currentLang={currentLang} />
-
-        <ContactsSection
-          currentLang={currentLang}
-          onOpenInquiry={() => setB2bModalOpen(true)}
-        />
-      </main>
-
-      {/* Corporate Footer */}
-      <Footer currentLang={currentLang} />
-
-      {/* Persistent / Floating Cookie Consent Banner */}
-      <CookieConsentBanner currentLang={currentLang} />
-
-      {/* B2B Turnkey Proposal Modal */}
-      <B2BModal
-        isOpen={b2bModalOpen}
-        onClose={() => setB2bModalOpen(false)}
-        currentLang={currentLang}
-        onSuccess={() => {
-          showToast('Pedido de proposta empresarial enviado com sucesso!');
-        }}
-      />
-    </div>
+      </div>
+    </BrowserRouter>
   );
 }

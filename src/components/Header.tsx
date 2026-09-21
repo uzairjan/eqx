@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { EqxLogo } from './EqxLogo';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data/content';
@@ -17,8 +18,26 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = TRANSLATIONS[currentLang];
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const goHome = () => {
+    setMobileMenuOpen(false);
+    if (location.pathname !== '/') {
+      navigate('/');
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);
+    // Section anchors only exist on the home page: from anywhere else,
+    // go home first (ScrollManager completes the scroll).
+    if (location.pathname !== '/') {
+      navigate(`/${href}`);
+      return;
+    }
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -34,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              goHome();
             }}
             className="group flex items-center transition-transform hover:scale-[1.02]"
             aria-label="EQX Empower Solutions"
@@ -57,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              goHome();
             }}
             className="px-3 py-1.5 text-slate-300 hover:text-white hover:bg-white/[0.04] rounded-lg transition-colors font-medium"
           >
@@ -182,8 +201,7 @@ export const Header: React.FC<HeaderProps> = ({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setMobileMenuOpen(false);
+                goHome();
               }}
               className="px-3 py-2.5 text-white hover:text-[#f59e0b] rounded-lg hover:bg-white/[0.04] font-epilogue text-sm font-semibold flex items-center justify-between"
             >
