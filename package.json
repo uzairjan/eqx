@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "build:prod": "VITE_CHEGATTA_API_URL=https://app.chegatta.com/api/v1 vite build",
+    "deploy": "npm run build:prod && wrangler pages deploy dist --project-name=eqx-website",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
