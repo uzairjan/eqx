@@ -28,6 +28,7 @@ export interface JobVacancy {
 export interface OperationalHub {
   id: string;
   name: string;
+  shortLabel: string;
   role: string;
   coordinates: string;
   activeSpecialists: number;

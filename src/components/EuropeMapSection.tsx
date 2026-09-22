@@ -71,14 +71,14 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
                 className={`absolute left-[20%] bottom-[30%] group focus:outline-none transition-all ${
                   activeHubId === 'portugal' ? 'scale-125 z-20' : 'z-10'
                 }`}
-                title="Portugal (Sede Operacional Gaia)"
+                title={hubs[0]?.name}
               >
                 <div className="relative flex items-center justify-center">
                   <span className="w-4 h-4 rounded-full bg-[#f59e0b] radar-pulse-amber" />
                   <span className="absolute w-2 h-2 rounded-full bg-white" />
                 </div>
                 <span className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-space-grotesk text-[10px] font-bold text-[#ffc174] bg-[#0c1017]/90 px-1.5 py-0.5 rounded border border-[#f59e0b]/30">
-                  PT (Gaia HQ)
+                  {hubs[0]?.shortLabel}
                 </span>
               </button>
 
@@ -89,14 +89,14 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
                 className={`absolute left-[45%] top-[45%] group focus:outline-none transition-all ${
                   activeHubId === 'france-germany' ? 'scale-125 z-20' : 'z-10'
                 }`}
-                title="França & Alemanha"
+                title={hubs[1]?.name}
               >
                 <div className="relative flex items-center justify-center">
                   <span className="w-4 h-4 rounded-full bg-[#06b6d4] radar-pulse-ring" />
                   <span className="absolute w-2 h-2 rounded-full bg-white" />
                 </div>
                 <span className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-space-grotesk text-[10px] font-bold text-[#4cd7f6] bg-[#0c1017]/90 px-1.5 py-0.5 rounded border border-[#06b6d4]/30">
-                  FR & DE
+                  {hubs[1]?.shortLabel}
                 </span>
               </button>
 
@@ -107,14 +107,14 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
                 className={`absolute left-[50%] top-[30%] group focus:outline-none transition-all ${
                   activeHubId === 'netherlands-belgium' ? 'scale-125 z-20' : 'z-10'
                 }`}
-                title="Holanda & Bélgica"
+                title={hubs[2]?.name}
               >
                 <div className="relative flex items-center justify-center">
                   <span className="w-4 h-4 rounded-full bg-[#06b6d4] radar-pulse-ring" />
                   <span className="absolute w-2 h-2 rounded-full bg-white" />
                 </div>
                 <span className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-space-grotesk text-[10px] font-bold text-[#4cd7f6] bg-[#0c1017]/90 px-1.5 py-0.5 rounded border border-[#06b6d4]/30">
-                  NL & BE
+                  {hubs[2]?.shortLabel}
                 </span>
               </button>
 
@@ -125,14 +125,14 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
                 className={`absolute right-[30%] top-[18%] group focus:outline-none transition-all ${
                   activeHubId === 'scandinavia-spain' ? 'scale-125 z-20' : 'z-10'
                 }`}
-                title="Escandinávia & Espanha"
+                title={hubs[3]?.name}
               >
                 <div className="relative flex items-center justify-center">
                   <span className="w-4 h-4 rounded-full bg-[#f59e0b] radar-pulse-amber" />
                   <span className="absolute w-2 h-2 rounded-full bg-white" />
                 </div>
                 <span className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-space-grotesk text-[10px] font-bold text-[#ffc174] bg-[#0c1017]/90 px-1.5 py-0.5 rounded border border-[#f59e0b]/30">
-                  Nordics & ES
+                  {hubs[3]?.shortLabel}
                 </span>
               </button>
 
@@ -148,7 +148,7 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
             {/* Hub Selector Buttons */}
             <div className="space-y-3">
               <h3 className="font-space-grotesk text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                Hubs Estratégicos Ativos
+                {t.europe.activeHubs}
               </h3>
               {hubs.map(hub => {
                 const isActive = hub.id === activeHubId;
@@ -180,7 +180,7 @@ export const EuropeMapSection: React.FC<EuropeMapSectionProps> = ({ currentLang 
                         {hub.activeSpecialists}
                       </span>
                       <span className="font-space-grotesk text-[10px] text-slate-500 uppercase">
-                        Especialistas
+                        {t.europe.specialistsUnit}
                       </span>
                     </div>
                   </button>

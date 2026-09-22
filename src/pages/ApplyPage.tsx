@@ -27,13 +27,14 @@ export const ApplyPage: React.FC<ApplyPageProps> = ({ currentLang }) => {
   }, []);
 
   const parsed = parseRouteId(jobId);
-  const liveJob = 'liveId' in parsed
+  const liveJob = ('liveId' in parsed)
     ? feed?.jobs.find((j) => j.id === parsed.liveId) ?? null
     : null;
-  const staticJob = 'slug' in parsed
+  const staticJob = ('slug' in parsed)
     ? JOB_VACANCIES[currentLang].find((v) => v.id === parsed.slug) ?? null
     : null;
   const title = liveJob?.title ?? staticJob?.title ?? '';
+  const jobKnown = Boolean(liveJob || staticJob);
 
   useEffect(() => {
     if (title) document.title = `EQX — Candidatura: ${title}`;
@@ -44,7 +45,7 @@ export const ApplyPage: React.FC<ApplyPageProps> = ({ currentLang }) => {
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6">
         <button
           type="button"
-          onClick={() => navigate(jobId ? `/vaga/${jobId}` : '/#recrutamento')}
+          onClick={() => navigate(jobKnown ? `/vaga/${jobId}` : '/#recrutamento')}
           className="inline-flex items-center gap-1.5 text-xs font-epilogue font-bold text-slate-400 hover:text-[#ffc174] transition-colors mb-6"
         >
           <span className="material-symbols-outlined text-[16px]">arrow_back</span>
@@ -65,7 +66,7 @@ export const ApplyPage: React.FC<ApplyPageProps> = ({ currentLang }) => {
               <div className="h-10 rounded-xl bg-white/10" />
               <div className="h-24 rounded-xl bg-white/10" />
             </div>
-          ) : liveJob || staticJob && !('liveId' in parsed) ? (
+          ) : (liveJob || staticJob) ? (
             liveJob ? (
               <ApplicationForm
                 currentLang={currentLang}

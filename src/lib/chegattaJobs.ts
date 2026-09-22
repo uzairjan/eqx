@@ -11,11 +11,17 @@
  * CORS is open on the platform side for /api/v1/public/* from any origin.
  */
 
+export interface LiveJobSite {
+  id: number;
+  name: string | null;
+}
+
 export interface LiveJobOpening {
   id: number;
   title: string;
   description: string | null;
   site_ids: number[];
+  sites?: LiveJobSite[];
   opens_at: string | null;
   closes_at: string | null;
   positions_available: number | null;
@@ -53,12 +59,15 @@ export function useLiveJobs() {
   const [feed, setFeed] = useState<LiveFeed | null>(null);
   const [loading, setLoading] = useState<boolean>(isLiveMode());
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!isLiveMode()) {
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError(null);
     const ctrl = new AbortController();
     fetchOpenings(ctrl.signal)
       .then((f) => {
@@ -71,9 +80,9 @@ export function useLiveJobs() {
         setLoading(false);
       });
     return () => ctrl.abort();
-  }, []);
+  }, [attempt]);
 
-  return { feed, loading, error, liveMode: isLiveMode() };
+  return { feed, loading, error, liveMode: isLiveMode(), retry: () => setAttempt((n) => n + 1) };
 }
 
 /**
@@ -88,6 +97,34 @@ export function toRouteId(job: LiveJobOpening): string {
 export function parseRouteId(routeId: string): { liveId: number } | { slug: string } {
   const m = /^live-(\d+)$/.exec(routeId || '');
   return m ? { liveId: Number(m[1]) } : { slug: routeId };
+}
+
+export interface LeadInput {
+  company_name: string;
+  contact_person: string;
+  email: string;
+  phone?: string;
+  sector?: string;
+  headcount?: string;
+  message?: string;
+}
+
+/**
+ * POST /public/contact — B2B/turnkey proposal request. Emailed to the
+ * hiring business; always 201 for accepted payloads (delivery is
+ * best-effort server-side, logged for follow-up).
+ */
+export async function submitLead(input: LeadInput, signal?: AbortSignal): Promise<void> {
+  const token = getBusinessToken();
+  if (!token) throw new JobsApiError(0, 'Lead intake not configured.');
+  const res = await fetch(`${getApiBase()}/public/contact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ business: token, ...input }),
+    signal,
+  });
+  if (res.status === 201) return;
+  throw await readError(res);
 }
 
 export class JobsApiError extends Error {

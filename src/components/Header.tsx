@@ -171,18 +171,21 @@ export const Header: React.FC<HeaderProps> = ({
             {t.nav.applyAreaBtn}
           </button>
 
-          {/* User Icon indicator */}
-          <div
-            className="hidden sm:flex w-9 h-9 rounded-full bg-[#191c21] border border-white/10 items-center justify-center text-[#ffc174] shadow-sm hover:border-[#f59e0b]/40 cursor-pointer"
-            title="EQX Portal de Especialistas"
+          {/* Candidate portal shortcut (same destination as the CTA) */}
+          <button
+            type="button"
+            onClick={onOpenCandidatePortal}
+            className="hidden sm:flex w-9 h-9 rounded-full bg-[#191c21] border border-white/10 items-center justify-center text-[#ffc174] shadow-sm hover:border-[#f59e0b]/40"
+            title={t.nav.applyAreaBtn}
+            aria-label={t.nav.applyAreaBtn}
           >
             <span className="material-symbols-outlined text-[18px]">person</span>
-          </div>
+          </button>
 
           {/* Mobile Hamburger Toggle */}
           <button
             type="button"
-            aria-label="Abrir Menu de Navegação"
+            aria-label={t.nav.openMenu}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="xl:hidden w-10 h-10 rounded-xl bg-[#131923] border border-white/10 flex items-center justify-center text-white hover:text-[#f59e0b] active:scale-95 transition-all"
           >
@@ -206,6 +209,17 @@ export const Header: React.FC<HeaderProps> = ({
               className="px-3 py-2.5 text-white hover:text-[#f59e0b] rounded-lg hover:bg-white/[0.04] font-epilogue text-sm font-semibold flex items-center justify-between"
             >
               <span>{t.nav.home}</span>
+              <span className="material-symbols-outlined text-[18px] text-slate-500">chevron_right</span>
+            </a>
+            <a
+              href="#hero"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavClick('#hero');
+              }}
+              className="px-3 py-2.5 text-slate-300 hover:text-white rounded-lg hover:bg-white/[0.04] font-epilogue text-sm font-semibold flex items-center justify-between"
+            >
+              <span>{t.nav.about}</span>
               <span className="material-symbols-outlined text-[18px] text-slate-500">chevron_right</span>
             </a>
             <a

@@ -32,7 +32,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [primaryArea, setPrimaryArea] = useState(initialArea || 'Energias Renováveis');
+  const [primaryArea, setPrimaryArea] = useState(initialArea || t.careers.areaOptions[0]);
   const [experience, setExperience] = useState('');
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
     setFullName('');
     setPhone('');
     setEmail('');
-    setPrimaryArea(initialArea || 'Energias Renováveis');
+    setPrimaryArea(initialArea || t.careers.areaOptions[0]);
     setExperience('');
     clearFile();
   };
@@ -78,14 +78,22 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
     }
     if (!liveJob) return;
 
+    if (!liveJob) return;
+    if (cvFile && cvFile.size > 2 * 1024 * 1024) {
+      setSubmitError(t.careers.fileTooLarge);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
     try {
+      const areaNote = primaryArea ? `Área: ${primaryArea}` : '';
+      const notes = [areaNote, experience.trim()].filter(Boolean).join('\n') || undefined;
       await submitApplication(liveJob, {
         name: fullName.trim(),
         email: email.trim(),
         phone: phone.trim(),
-        notes: experience.trim() || undefined,
+        notes,
         cv: cvFile,
       });
       setSubmitted(true);
@@ -181,11 +189,9 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
             onChange={e => setPrimaryArea(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl bg-[#0c1017] border border-white/10 text-white text-sm focus:border-[#f59e0b] focus:outline-none focus:ring-1 focus:ring-[#f59e0b] transition-colors"
           >
-            <option value="Energias Renováveis">Energias Renováveis (Eólica / Solar)</option>
-            <option value="Indústria Naval">Indústria Naval (Construção & Conversão)</option>
-            <option value="Eletricidade Industrial">Eletricidade Industrial (BT / MT)</option>
-            <option value="Metalomecânica & Precisão">Metalomecânica & Precisão (Soldadura)</option>
-            <option value="Outra Especialidade">Outra Especialidade Técnica</option>
+            {t.careers.areaOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -217,16 +223,21 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
         <div
           onDragOver={e => {
             e.preventDefault();
+            setDragOver(true);
           }}
+          onDragLeave={() => setDragOver(false)}
           onDrop={e => {
             e.preventDefault();
+            setDragOver(false);
             keepFile(e.dataTransfer.files?.[0]);
           }}
           onClick={() => fileInputRef.current?.click()}
           className={`p-4 rounded-xl border border-dashed transition-colors cursor-pointer flex flex-col items-center justify-center text-center ${
             cvFileName
               ? 'border-emerald-500/50 bg-emerald-500/10'
-              : 'border-white/20 bg-[#0c1017] hover:border-white/40'
+              : dragOver
+                ? 'border-[#f59e0b] bg-[#f59e0b]/10'
+                : 'border-white/20 bg-[#0c1017] hover:border-white/40'
           }`}
         >
           {cvFileName ? (
@@ -283,7 +294,8 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !liveJob}
+        title={!liveJob ? t.careers.applyOfflineNotice : undefined}
         className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ea580c] hover:brightness-110 text-[#331c00] font-epilogue font-bold text-sm sm:text-base shadow-[0_0_24px_rgba(245,158,11,0.35)] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4"
       >
         {isSubmitting ? (

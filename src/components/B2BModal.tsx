@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Language, B2BProposalData } from '../types';
 import { TRANSLATIONS } from '../data/content';
+import { isLiveMode, submitLead, JobsApiError } from '../lib/chegattaJobs';
 
 interface B2BModalProps {
   isOpen: boolean;
@@ -16,39 +17,106 @@ export const B2BModal: React.FC<B2BModalProps> = ({
   onSuccess
 }) => {
   const t = TRANSLATIONS[currentLang];
-  const [formData, setFormData] = useState<B2BProposalData>({
+  const [formData, setFormData] = useState<B2BProposalData>(() => ({
     companyName: '',
     contactPerson: '',
     email: '',
     phone: '',
     sector: 'Energias Renováveis',
-    specialistsNeeded: '10 - 25 Especialistas',
-    deploymentLocation: 'Alemanha / Escandinávia',
+    specialistsNeeded: '5 - 15 Especialistas',
+    deploymentLocation: '',
     message: ''
-  });
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Fresh form every time the modal opens; never show a stale success.
+  useEffect(() => {
+    if (isOpen) {
+      setIsSent(false);
+      setSubmitError(null);
+      setIsSubmitting(false);
+      setFormData({
+        companyName: '',
+        contactPerson: '',
+        email: '',
+        phone: '',
+        sector: t.b2bModal.sectorOptions[0],
+        specialistsNeeded: t.b2bModal.headcountOptions[1],
+        deploymentLocation: '',
+        message: ''
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Escape closes (but never while sending).
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, isSubmitting, onClose]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName || !formData.email || !formData.phone) {
-      alert('Por favor, preencha os campos obrigatórios (*).');
+      setSubmitError(t.b2bModal.errRequired);
+      return;
+    }
+
+    // Static preview (no business token): the lead has nowhere to go.
+    // Say so honestly instead of faking success.
+    if (!isLiveMode()) {
+      setSubmitError(t.b2bModal.previewNotice);
       return;
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setSubmitError(null);
+    try {
+      await submitLead({
+        company_name: formData.companyName,
+        contact_person: formData.contactPerson,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        sector: formData.sector || undefined,
+        headcount: formData.specialistsNeeded || undefined,
+        message: [
+          formData.deploymentLocation ? `Location: ${formData.deploymentLocation}` : '',
+          formData.message || '',
+        ].filter(Boolean).join('\n') || undefined,
+      });
       setIsSent(true);
       onSuccess();
-    }, 1200);
+    } catch (err) {
+      if (err instanceof JobsApiError && err.status === 422 && Object.keys(err.fields).length > 0) {
+        const [field, messages] = Object.entries(err.fields)[0];
+        setSubmitError(`${field}: ${messages.join(', ')}`);
+      } else {
+        setSubmitError(err instanceof Error ? err.message : t.b2bModal.submitError);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-[#131923] border border-white/20 p-6 sm:p-8 shadow-2xl my-8">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto"
+      onClick={() => {
+        if (!isSubmitting) onClose();
+      }}
+    >
+      <div
+        className="relative w-full max-w-2xl rounded-2xl bg-[#131923] border border-white/20 p-6 sm:p-8 shadow-2xl my-8"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           onClick={onClose}
@@ -64,7 +132,7 @@ export const B2BModal: React.FC<B2BModalProps> = ({
               <span className="material-symbols-outlined text-[36px]">business_center</span>
             </div>
             <h3 className="font-epilogue text-2xl font-bold text-white mb-2">
-              Proposta Requisitada com Sucesso
+              {t.b2bModal.successTitle}
             </h3>
             <p className="font-body text-slate-300 text-sm max-w-md mx-auto mb-6">
               {t.b2bModal.success}
@@ -77,14 +145,14 @@ export const B2BModal: React.FC<B2BModalProps> = ({
               }}
               className="px-6 py-2.5 rounded-xl bg-[#f59e0b] text-[#331c00] font-epilogue text-sm font-bold shadow-lg"
             >
-              Concluir
+              {t.b2bModal.doneAction}
             </button>
           </div>
         ) : (
           <div>
             <div className="mb-6 pb-4 border-b border-white/10">
               <span className="font-space-grotesk text-xs font-bold text-[#f59e0b] uppercase tracking-wider block mb-1">
-                B2B Turnkey Workforce Solutions
+                {t.b2bModal.eyebrow}
               </span>
               <h3 className="font-epilogue text-2xl font-bold text-white">
                 {t.b2bModal.title}
@@ -163,11 +231,9 @@ export const B2BModal: React.FC<B2BModalProps> = ({
                     onChange={e => setFormData({ ...formData, sector: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl bg-[#0c1017] border border-white/10 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
                   >
-                    <option value="Energias Renováveis">Energias Renováveis</option>
-                    <option value="Indústria Naval">Indústria Naval</option>
-                    <option value="Eletricidade Industrial">Eletricidade Industrial</option>
-                    <option value="Metalomecânica & Precisão">Metalomecânica & Precisão</option>
-                    <option value="Multi-disciplinar">Multi-disciplinar</option>
+                    {t.b2bModal.sectorOptions.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -180,10 +246,9 @@ export const B2BModal: React.FC<B2BModalProps> = ({
                     onChange={e => setFormData({ ...formData, specialistsNeeded: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl bg-[#0c1017] border border-white/10 text-white text-xs focus:border-[#f59e0b] focus:outline-none"
                   >
-                    <option value="1 - 5 Especialistas">1 - 5 Especialistas</option>
-                    <option value="5 - 15 Especialistas">5 - 15 Especialistas</option>
-                    <option value="15 - 50 Especialistas">15 - 50 Especialistas</option>
-                    <option value="50+ Força Operacional">50+ Força Operacional</option>
+                    {t.b2bModal.headcountOptions.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -214,6 +279,12 @@ export const B2BModal: React.FC<B2BModalProps> = ({
                 />
               </div>
 
+              {submitError ? (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-body text-xs">
+                  {submitError}
+                </div>
+              ) : null}
+
               <div className="flex gap-3 pt-3">
                 <button
                   type="submit"
@@ -223,7 +294,7 @@ export const B2BModal: React.FC<B2BModalProps> = ({
                   {isSubmitting ? (
                     <>
                       <span className="w-4 h-4 rounded-full border-2 border-[#331c00] border-t-transparent animate-spin" />
-                      <span>A processar proposta...</span>
+                      <span>{t.b2bModal.processing}</span>
                     </>
                   ) : (
                     <span>{t.b2bModal.submit}</span>

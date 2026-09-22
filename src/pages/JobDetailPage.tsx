@@ -43,7 +43,7 @@ function resolveLive(job: LiveJobOpening): ResolvedJob {
     routeId: `live-${job.id}`,
     title: job.title,
     department: '',
-    location: '',
+    location: (job.sites || []).map((s) => s.name).filter(Boolean).join(' • '),
     contractType: '',
     description: job.description,
     reference: `EQX-${job.id}`,
@@ -63,7 +63,7 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
   const t = TRANSLATIONS[currentLang];
   const { jobId = '' } = useParams();
   const navigate = useNavigate();
-  const { feed, loading, error } = useLiveJobs();
+  const { feed, loading, error, retry } = useLiveJobs();
 
   useEffect(() => {
     document.title = 'EQX — Vaga';
@@ -81,7 +81,7 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
 
   useEffect(() => {
     if (resolved) document.title = `EQX — ${resolved.title}`;
-  });
+  }, [resolved?.title]);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#e2e2ea] pt-24 sm:pt-28 pb-20">
@@ -109,12 +109,23 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
             <p className="font-body text-sm text-slate-400 mb-6">
               {error || t.careers.jobNotFoundBody}
             </p>
-            <Link
-              to="/#recrutamento"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ea580c] text-[#331c00] font-epilogue font-bold text-sm"
-            >
-              {t.careers.backToVacancies}
-            </Link>
+            <div className="flex items-center justify-center gap-3">
+              {error ? (
+                <button
+                  type="button"
+                  onClick={retry}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 text-white font-epilogue font-bold text-sm border border-white/10"
+                >
+                  {t.careers.retryAction}
+                </button>
+              ) : null}
+              <Link
+                to="/#recrutamento"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#f59e0b] to-[#ea580c] text-[#331c00] font-epilogue font-bold text-sm"
+              >
+                {t.careers.backToVacancies}
+              </Link>
+            </div>
           </div>
         ) : (
           <article className="rounded-2xl bg-[#131923] border border-white/10 overflow-hidden">

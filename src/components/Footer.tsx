@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { EqxLogo } from './EqxLogo';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data/content';
@@ -9,6 +10,19 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ currentLang }) => {
   const t = TRANSLATIONS[currentLang];
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Same router-aware pattern as the header: section anchors only exist
+  // on the home page, so navigate home first from anywhere else.
+  const goVacancies = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/#recrutamento');
+    } else {
+      document.querySelector('#recrutamento')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <footer className="relative bg-[#07090e] border-t border-white/10 pt-16 pb-12 overflow-hidden">
@@ -103,9 +117,10 @@ export const Footer: React.FC<FooterProps> = ({ currentLang }) => {
               </span>
               <a
                 href="#recrutamento"
+                onClick={goVacancies}
                 className="inline-flex items-center gap-1 font-epilogue text-xs font-bold text-[#f59e0b] hover:underline"
               >
-                <span>Candidatura Direta</span>
+                <span>{t.footer.directApply}</span>
                 <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
               </a>
             </div>
@@ -119,8 +134,8 @@ export const Footer: React.FC<FooterProps> = ({ currentLang }) => {
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
-            <a href="#" className="hover:text-white transition-colors">
-              {t.footer.terms}
+            <a href="mailto:geral@eqx.pt" className="hover:text-white transition-colors">
+              {t.footer.termsNote}
             </a>
             <span>•</span>
             <a

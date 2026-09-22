@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Language, SectorItem } from '../types';
 import { TRANSLATIONS, SECTORS_DATA } from '../data/content';
 
@@ -15,6 +15,16 @@ export const SectorsSection: React.FC<SectorsSectionProps> = ({
   const sectors = SECTORS_DATA[currentLang];
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [activeModalSector, setActiveModalSector] = useState<SectorItem | null>(null);
+
+  // Escape closes the detail modal.
+  useEffect(() => {
+    if (!activeModalSector) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveModalSector(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeModalSector]);
 
   const filters = [
     { id: 'all', label: t.areas.filterAll },
@@ -176,8 +186,14 @@ export const SectorsSection: React.FC<SectorsSectionProps> = ({
 
       {/* Sector Technical Detail Modal */}
       {activeModalSector && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#131923] border border-white/20 p-6 sm:p-8 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          onClick={() => setActiveModalSector(null)}
+        >
+          <div
+            className="relative w-full max-w-lg rounded-2xl bg-[#131923] border border-white/20 p-6 sm:p-8 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={() => setActiveModalSector(null)}
@@ -198,7 +214,7 @@ export const SectorsSection: React.FC<SectorsSectionProps> = ({
 
             <div className="mb-6 p-4 rounded-xl bg-[#0c1017] border border-white/5">
               <h4 className="font-space-grotesk text-xs font-bold text-slate-400 uppercase mb-3">
-                Disciplinas & Requisitos Chave
+                {t.areas.modalDisciplines}
               </h4>
               <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
                 {activeModalSector.bulletPoints.map((bp, i) => (
@@ -220,14 +236,14 @@ export const SectorsSection: React.FC<SectorsSectionProps> = ({
                 }}
                 className="flex-1 py-3 rounded-xl bg-[#f59e0b] hover:bg-[#fbbf24] text-[#331c00] font-epilogue text-sm font-bold shadow-lg transition-all"
               >
-                Candidatar-se a este Sector
+                {t.areas.modalApply}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveModalSector(null)}
                 className="px-5 py-3 rounded-xl bg-[#191c21] hover:bg-white/10 text-white font-epilogue text-sm font-semibold border border-white/10 transition-all"
               >
-                Fechar
+                {t.areas.modalClose}
               </button>
             </div>
           </div>

@@ -235,6 +235,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'portugal',
       name: 'Portugal (Sede Operacional Gaia)',
+      shortLabel: 'PT (Gaia HQ)',
       role: 'Coordenação Central & Headquarter',
       coordinates: '41.1333° N, 8.6167° W',
       activeSpecialists: 240,
@@ -244,6 +245,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'france-germany',
       name: 'França & Alemanha',
+      shortLabel: 'FR & DE',
       role: 'Estaleiros Navais & MT',
       coordinates: '48.8566° N, 2.3522° E',
       activeSpecialists: 580,
@@ -253,6 +255,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'netherlands-belgium',
       name: 'Holanda & Bélgica',
+      shortLabel: 'NL & BE',
       role: 'Eólica Offshore & Redes',
       coordinates: '51.9244° N, 4.4777° E',
       activeSpecialists: 420,
@@ -262,6 +265,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'scandinavia-spain',
       name: 'Escandinávia & Espanha',
+      shortLabel: 'Nordics & ES',
       role: 'Montagem de Turbinas',
       coordinates: '59.3293° N, 18.0686° E',
       activeSpecialists: 290,
@@ -273,6 +277,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'portugal',
       name: 'Portugal (Operational HQ Gaia)',
+      shortLabel: 'PT (Gaia HQ)',
       role: 'Central Coordination & HQ',
       coordinates: '41.1333° N, 8.6167° W',
       activeSpecialists: 240,
@@ -282,6 +287,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'france-germany',
       name: 'France & Germany',
+      shortLabel: 'FR & DE',
       role: 'Naval Shipyards & MV Systems',
       coordinates: '48.8566° N, 2.3522° E',
       activeSpecialists: 580,
@@ -291,6 +297,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'netherlands-belgium',
       name: 'Netherlands & Belgium',
+      shortLabel: 'NL & BE',
       role: 'Offshore Wind & Grids',
       coordinates: '51.9244° N, 4.4777° E',
       activeSpecialists: 420,
@@ -300,6 +307,7 @@ export const OPERATIONAL_HUBS: Record<Language, OperationalHub[]> = {
     {
       id: 'scandinavia-spain',
       name: 'Scandinavia & Spain',
+      shortLabel: 'Nordics & ES',
       role: 'Turbine Erection & Maintenance',
       coordinates: '59.3293° N, 18.0686° E',
       activeSpecialists: 290,
@@ -319,6 +327,7 @@ export const TRANSLATIONS = {
       careers: 'Candidaturas',
       contacts: 'Contactos',
       applyAreaBtn: 'Área de Candidaturas →',
+      openMenu: 'Abrir Menu de Navegação',
       hudBadge: '1,500+ Especialistas Desdobrados • Toda a Europa • 99.8% Precisão'
     },
     hero: {
@@ -367,6 +376,9 @@ export const TRANSLATIONS = {
       title: 'Áreas onde atuamos',
       subtitle: 'Soluções completas com técnicos credenciados para missões que exigem precisão cirúrgica e cumprimento rigoroso de prazos.',
       filterLabel: 'Filtro de Disciplina:',
+      modalDisciplines: 'Disciplinas & Requisitos Chave',
+      modalApply: 'Candidatar-se a este Sector',
+      modalClose: 'Fechar',
       filterAll: 'Todos (04)',
       filterOffshore: 'Offshore & Wind',
       filterNaval: 'Estaleiros Navais',
@@ -377,7 +389,7 @@ export const TRANSLATIONS = {
     turnkey: {
       eyebrow: '[ 03 // MODELO OPERACIONAL TURNKEY ]',
       title: 'O que fazemos & como entregamos resultados',
-      quote: '“From recruitment to travel and accommodation, we take care of all the paperwork so you can concentrate on your project.”',
+      quote: '“Do recrutamento à viagem e ao alojamento, tratamos de toda a burocracia para que se possa concentrar no seu projeto.”',
       desc: 'Eliminamos o atrito na alocação transfronteiriça de recursos humanos. Assumimos a responsabilidade jurídica, os fluxos logísticos e a conformidade técnica para que a sua linha de produção nunca pare.',
       requestProposal: 'Solicitar Proposta Empresarial',
       step1Num: '01',
@@ -411,7 +423,7 @@ export const TRANSLATIONS = {
       expLabel: 'Experiência & Certificações Relevantes',
       expPlaceholder: 'Indique anos de experiência, certificados (ex: GWO, soldadura) e disponibilidade de deslocação internacional...',
       attachCv: 'Anexar Curriculum Vitae (PDF / Word)',
-      maxSize: 'Tamanho máximo: 10MB',
+      maxSize: 'Tamanho máximo: 2MB (PDF, DOC, DOCX)',
       submitBtn: 'Submeter Candidatura Espontânea →',
       gdpr: 'Dados protegidos pelo RGPD',
       whatsapp: 'Linha WhatsApp de Apoio',
@@ -434,6 +446,9 @@ export const TRANSLATIONS = {
       applyTitleFallback: 'Candidatura',
       applyOfflineNotice: 'As candidaturas online abrem em breve. Entretanto, fale connosco pelo WhatsApp.',
       contactUs: 'Falar connosco',
+      retryAction: 'Tentar novamente',
+      fileTooLarge: 'O CV excede 2MB. Comprima o ficheiro e tente novamente.',
+      areaOptions: ['Energias Renováveis', 'Indústria Naval', 'Eletricidade Industrial', 'Metalomecânica & Precisão', 'Outra Especialidade'],
     },
     europe: {
       eyebrow: '[ 05 // LOGÍSTICA & PRESENÇA ]',
@@ -444,6 +459,8 @@ export const TRANSLATIONS = {
       status: 'STATUS: OPERACIONAL CONTÍNUO',
       hubsCount: '12+',
       hubsLabel: 'Hubs Logísticos',
+      activeHubs: 'Hubs Estratégicos Ativos',
+      specialistsUnit: 'Especialistas',
       accomCount: '100%',
       accomLabel: 'Alojamento Garantido',
       stopsCount: '0',
@@ -465,7 +482,12 @@ export const TRANSLATIONS = {
       country: 'Porto • Portugal — União Europeia',
       mapsBtn: 'Abrir no Google Maps',
       social: 'Siga-nos',
-      socialDesc: 'Acompanhe novos projetos industriais e aberturas de vagas em tempo real nas nossas redes.'
+      socialDesc: 'Acompanhe novos projetos industriais e aberturas de vagas em tempo real nas nossas redes.',
+      copyPhone: 'Copiar Telefone',
+      copyEmail: 'Copiar Email',
+      callDirect: 'Ligar Linha Direta',
+      copyFailed: 'Não foi possível copiar. Anote o contacto manualmente.',
+      requestBusinessContact: 'Pedir Contacto Empresarial',
     },
     cookies: {
       title: 'Gerir o Consentimento de Cookies',
@@ -474,7 +496,21 @@ export const TRANSLATIONS = {
       deny: 'Negar',
       preferences: 'Ver preferências',
       cookiePolicy: 'Política de Cookies',
-      privacyPolicy: 'Política de Privacidade'
+      privacyPolicy: 'Política de Privacidade',
+      manageCookies: 'Gerir Cookies',
+      close: 'Fechar',
+      prefsTitle: 'Preferências de Cookies',
+      necessary: 'Estritamente Necessários',
+      necessaryDesc: 'Essenciais para navegação e segurança.',
+      alwaysOn: 'Sempre Ativo',
+      functional: 'Funcionais & Desempenho',
+      functionalDesc: 'Preferências de idioma e métricas operacionais.',
+      analytics: 'Análise & Medição',
+      analyticsDesc: 'Estatísticas anónimas de utilização.',
+      marketing: 'Comunicação & Vagas',
+      marketingDesc: 'Alertas de vagas e oportunidades profissionais.',
+      savePreferences: 'Guardar Preferências',
+      acceptAll: 'Aceitar Tudo'
     },
     footer: {
       tagline: 'Engenharia industrial de ponta, infraestruturas navais e redes de energia renovável. Mobilização de capital humano de alta precisão em escala continental.',
@@ -494,8 +530,10 @@ export const TRANSLATIONS = {
       hubsLabel: 'Hubs Continentais',
       continuousRecruitment: 'Recrutamento Contínuo',
       directLine: 'Linha Direta',
-      copyright: '© 2025 EQX Empower Solutions. Todos os direitos reservados. Vila Nova de Gaia, Portugal.',
+      copyright: '© 2026 EQX Empower Solutions. Todos os direitos reservados. Vila Nova de Gaia, Portugal.',
       terms: 'Termos de Serviço',
+      termsNote: 'Termos e privacidade: geral@eqx.pt',
+      directApply: 'Candidatura Direta',
       complaints: 'Livro de Reclamações'
     },
     b2bModal: {
@@ -512,7 +550,16 @@ export const TRANSLATIONS = {
       detailsPlaceholder: 'Descreva os perfis desejados, datas de mobilização e requisitos específicos de certificação...',
       submit: 'Enviar Pedido de Proposta →',
       cancel: 'Cancelar',
-      success: 'Pedido de proposta recebido com sucesso! O nosso Diretor de Operações entrará em contacto em menos de 12 horas.'
+      success: 'Pedido de proposta recebido com sucesso! O nosso Diretor de Operações entrará em contacto em menos de 12 horas.',
+      errRequired: 'Por favor, preencha os campos obrigatórios (*).',
+      submitError: 'Não foi possível enviar. Tente novamente.',
+      previewNotice: 'Pré-visualização: configure o token da empresa para ativar o envio real.',
+      eyebrow: 'B2B Turnkey Workforce Solutions',
+      successTitle: 'Proposta Requisitada com Sucesso',
+      doneAction: 'Concluir',
+      processing: 'A processar proposta...',
+      sectorOptions: ['Energias Renováveis', 'Indústria Naval', 'Eletricidade Industrial', 'Metalomecânica & Precisão', 'Multi-disciplinar'],
+      headcountOptions: ['1 - 5 Especialistas', '5 - 15 Especialistas', '15 - 50 Especialistas', '50+ Força Operacional']
     }
   },
   en: {
@@ -524,6 +571,7 @@ export const TRANSLATIONS = {
       careers: 'Careers',
       contacts: 'Contacts',
       applyAreaBtn: 'Candidate Portal →',
+      openMenu: 'Open Navigation Menu',
       hudBadge: '1,500+ Specialists Deployed • Across Europe • 99.8% Mission Accuracy'
     },
     hero: {
@@ -572,6 +620,9 @@ export const TRANSLATIONS = {
       title: 'Our Areas of Operation',
       subtitle: 'Complete solutions with accredited technicians for missions requiring surgical precision and strict adherence to project deadlines.',
       filterLabel: 'Discipline Filter:',
+      modalDisciplines: 'Key Disciplines & Requirements',
+      modalApply: 'Apply to this Sector',
+      modalClose: 'Close',
       filterAll: 'All (04)',
       filterOffshore: 'Offshore & Wind',
       filterNaval: 'Naval Shipyards',
@@ -616,7 +667,7 @@ export const TRANSLATIONS = {
       expLabel: 'Relevant Experience & Certifications',
       expPlaceholder: 'Describe your years of experience, certificates (GWO, weld certifications), and international availability...',
       attachCv: 'Attach Curriculum Vitae (PDF / Word)',
-      maxSize: 'Maximum file size: 10MB',
+      maxSize: 'Maximum file size: 2MB (PDF, DOC, DOCX)',
       submitBtn: 'Submit Spontaneous Application →',
       gdpr: 'Protected under EU GDPR regulations',
       whatsapp: 'WhatsApp Support Line',
@@ -639,6 +690,9 @@ export const TRANSLATIONS = {
       applyTitleFallback: 'Application',
       applyOfflineNotice: 'Online applications open soon. Meanwhile, talk to us on WhatsApp.',
       contactUs: 'Contact us',
+      retryAction: 'Try again',
+      fileTooLarge: 'The CV exceeds 2MB. Please compress it and try again.',
+      areaOptions: ['Renewable Energy', 'Naval Industry', 'Industrial Electrical', 'Precision Metalworking', 'Other Speciality'],
     },
     europe: {
       eyebrow: '[ 05 // PRESENCE & LOGISTICS ]',
@@ -649,6 +703,8 @@ export const TRANSLATIONS = {
       status: 'STATUS: CONTINUOUS LIVE OPS',
       hubsCount: '12+',
       hubsLabel: 'Logistics Hubs',
+      activeHubs: 'Active Strategic Hubs',
+      specialistsUnit: 'Specialists',
       accomCount: '100%',
       accomLabel: 'Guaranteed Housing',
       stopsCount: '0',
@@ -670,7 +726,12 @@ export const TRANSLATIONS = {
       country: 'Porto • Portugal — European Union',
       mapsBtn: 'Open in Google Maps',
       social: 'Follow Us',
-      socialDesc: 'Track live industrial projects, offshore milestones, and immediate job openings.'
+      socialDesc: 'Track live industrial projects, offshore milestones, and immediate job openings.',
+      copyPhone: 'Copy Phone',
+      copyEmail: 'Copy Email',
+      callDirect: 'Call Direct Line',
+      copyFailed: 'Could not copy. Please note the contact manually.',
+      requestBusinessContact: 'Request Business Contact',
     },
     cookies: {
       title: 'Manage Cookie Consent',
@@ -679,7 +740,21 @@ export const TRANSLATIONS = {
       deny: 'Deny',
       preferences: 'View preferences',
       cookiePolicy: 'Cookie Policy',
-      privacyPolicy: 'Privacy Policy'
+      privacyPolicy: 'Privacy Policy',
+      manageCookies: 'Manage Cookies',
+      close: 'Close',
+      prefsTitle: 'Cookie Preferences',
+      necessary: 'Strictly Necessary',
+      necessaryDesc: 'Essential for navigation and security.',
+      alwaysOn: 'Always On',
+      functional: 'Functional & Performance',
+      functionalDesc: 'Language preferences and operational metrics.',
+      analytics: 'Analytics & Measurement',
+      analyticsDesc: 'Anonymous usage statistics.',
+      marketing: 'Comms & Jobs',
+      marketingDesc: 'Job alerts and professional opportunities.',
+      savePreferences: 'Save Preferences',
+      acceptAll: 'Accept All'
     },
     footer: {
       tagline: 'Precision industrial engineering, naval infrastructures and renewable power grids. Mobilizing high-grade technical talent at continental scale.',
@@ -699,8 +774,10 @@ export const TRANSLATIONS = {
       hubsLabel: 'Continental Hubs',
       continuousRecruitment: 'Continuous Recruitment',
       directLine: 'Direct Line',
-      copyright: '© 2025 EQX Empower Solutions. All rights reserved. Vila Nova de Gaia, Portugal.',
+      copyright: '© 2026 EQX Empower Solutions. All rights reserved. Vila Nova de Gaia, Portugal.',
       terms: 'Terms of Service',
+      termsNote: 'Terms & privacy: geral@eqx.pt',
+      directApply: 'Apply Directly',
       complaints: 'Consumer Complaints Portal'
     },
     b2bModal: {
@@ -717,7 +794,16 @@ export const TRANSLATIONS = {
       detailsPlaceholder: 'Detail required technical roles, mobilization dates, and specific certifications needed...',
       submit: 'Send Proposal Request →',
       cancel: 'Cancel',
-      success: 'Proposal request received! Our Chief of Operations will contact you within 12 hours.'
+      success: 'Proposal request received! Our Chief of Operations will contact you within 12 hours.',
+      errRequired: 'Please fill in the required fields (*).',
+      submitError: 'Could not send. Please try again.',
+      previewNotice: 'Preview mode: configure the business token to enable real submission.',
+      eyebrow: 'B2B Turnkey Workforce Solutions',
+      successTitle: 'Proposal Requested Successfully',
+      doneAction: 'Done',
+      processing: 'Processing proposal...',
+      sectorOptions: ['Renewable Energy', 'Naval Industry', 'Industrial Electrical', 'Precision Metalworking', 'Multi-disciplinary'],
+      headcountOptions: ['1 - 5 Specialists', '5 - 15 Specialists', '15 - 50 Specialists', '50+ Operational Force']
     }
   }
 };

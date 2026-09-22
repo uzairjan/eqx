@@ -13,11 +13,44 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
 }) => {
   const t = TRANSLATIONS[currentLang];
   const [copied, setCopied] = useState<string | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
 
-  const handleCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
+  const markCopied = (label: string) => {
+    setCopyFailed(false);
     setCopied(label);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const legacyCopy = (text: string): boolean => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'absolute';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleCopy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      markCopied(label);
+      return;
+    } catch {
+      // Non-HTTPS / denied permission: legacy fallback.
+    }
+    if (legacyCopy(text)) {
+      markCopied(label);
+    } else {
+      setCopyFailed(true);
+    }
   };
 
   return (
@@ -63,7 +96,7 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
                     type="button"
                     onClick={() => handleCopy('+351 223 160 304', 'phone')}
                     className="text-slate-400 hover:text-white p-1"
-                    title="Copiar Telefone"
+                    title={t.contacts.copyPhone}
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       {copied === 'phone' ? 'done' : 'content_copy'}
@@ -85,7 +118,7 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
                     type="button"
                     onClick={() => handleCopy('geral@eqx.pt', 'email')}
                     className="text-slate-400 hover:text-white p-1"
-                    title="Copiar Email"
+                    title={t.contacts.copyEmail}
                   >
                     <span className="material-symbols-outlined text-[18px]">
                       {copied === 'email' ? 'done' : 'content_copy'}
@@ -99,8 +132,13 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
               href="tel:+351223160304"
               className="w-full py-3 rounded-xl bg-[#191c21] hover:bg-[#f59e0b] text-[#ffc174] hover:text-[#331c00] border border-[#f59e0b]/30 font-epilogue text-xs sm:text-sm font-bold text-center transition-all"
             >
-              Ligar Linha Direta
+              {t.contacts.callDirect}
             </a>
+            {copyFailed ? (
+              <p className="font-body text-[11px] text-rose-300 mt-2 text-center">
+                {t.contacts.copyFailed}
+              </p>
+            ) : null}
           </div>
 
           {/* Card 2: HQ Location */}
@@ -153,35 +191,9 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
                 {t.contacts.socialDesc}
               </p>
 
-              <div className="flex items-center gap-3 mb-6">
-                <a
-                  href="https://www.linkedin.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-11 h-11 rounded-xl bg-[#0c1017] border border-white/10 hover:border-[#06b6d4] hover:text-[#06b6d4] flex items-center justify-center text-slate-300 transition-colors"
-                  title="LinkedIn EQX"
-                >
-                  <span className="material-symbols-outlined text-[20px]">share</span>
-                </a>
-                <a
-                  href="https://www.instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-11 h-11 rounded-xl bg-[#0c1017] border border-white/10 hover:border-[#f59e0b] hover:text-[#f59e0b] flex items-center justify-center text-slate-300 transition-colors"
-                  title="Instagram EQX"
-                >
-                  <span className="material-symbols-outlined text-[20px]">photo_camera</span>
-                </a>
-                <a
-                  href="https://www.facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-11 h-11 rounded-xl bg-[#0c1017] border border-white/10 hover:border-white text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                  title="Facebook EQX"
-                >
-                  <span className="material-symbols-outlined text-[20px]">public</span>
-                </a>
-              </div>
+              {/* Social profiles intentionally omitted until the client
+                  provides real profile URLs: generic homepages dump
+                  visitors on login walls. */}
             </div>
 
             <button
@@ -189,7 +201,7 @@ export const ContactsSection: React.FC<ContactsSectionProps> = ({
               onClick={onOpenInquiry}
               className="w-full py-3 rounded-xl bg-[#f59e0b] hover:bg-[#fbbf24] text-[#331c00] font-epilogue text-xs sm:text-sm font-bold text-center transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)]"
             >
-              Pedir Contacto Empresarial
+              {t.contacts.requestBusinessContact}
             </button>
           </div>
         </div>

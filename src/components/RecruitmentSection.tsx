@@ -60,7 +60,7 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
       routeId: `live-${job.id}`,
       title: job.title,
       department: '',
-      location: '',
+      location: (job.sites || []).map((s) => s.name).filter(Boolean).join(' • '),
       contractType: '',
       status: (currentLang === 'pt' ? 'Ativa' : 'Active') as 'Ativa' | 'Active',
     }))

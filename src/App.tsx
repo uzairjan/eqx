@@ -120,12 +120,16 @@ function HomePage({
 export default function App() {
   const [currentLang, setCurrentLang] = useState<Language>('pt');
   const [b2bModalOpen, setB2bModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<{ id: number; message: string }[]>([]);
+  const toastId = React.useRef(0);
 
+  // Queued toasts: concurrent successes (e.g. B2B + application) no
+  // longer overwrite each other; each lives 4.5s.
   const showToast = (message: string) => {
-    setToastMessage(message);
+    const id = ++toastId.current;
+    setToasts((prev) => [...prev.slice(-2), { id, message }]);
     setTimeout(() => {
-      setToastMessage(null);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4500);
   };
 
@@ -133,13 +137,20 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-[#07090e] text-[#e2e2ea] flex flex-col selection:bg-[#f59e0b] selection:text-[#613b00] font-body relative">
         <ScrollManager />
-        {/* Toast Notification */}
-        {toastMessage && (
-          <Toast
-            message={toastMessage}
-            onClose={() => setToastMessage(null)}
-          />
-        )}
+        {/* Toast Notifications */}
+        {toasts.length > 0 ? (
+          <div className="fixed top-24 right-4 sm:right-8 z-50 flex flex-col gap-2 max-w-md">
+            {toasts.map((toast) => (
+              <Toast
+                key={toast.id}
+                message={toast.message}
+                onClose={() =>
+                  setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+                }
+              />
+            ))}
+          </div>
+        ) : null}
 
         {/* Fixed Header */}
         <Header
