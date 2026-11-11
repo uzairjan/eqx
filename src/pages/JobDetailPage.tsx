@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Language, JobVacancy } from '../types';
 import { TRANSLATIONS, JOB_VACANCIES } from '../data/content';
-import { parseRouteId, useLiveJobs, type LiveJobOpening } from '../lib/chegattaJobs';
+import { parseRouteId, useLiveJobs, employmentTypeLabel, formatLiveSalary, type LiveJobOpening } from '../lib/chegattaJobs';
 
 interface JobDetailPageProps {
   currentLang: Language;
@@ -38,13 +38,16 @@ function resolveStatic(v: JobVacancy): ResolvedJob {
   };
 }
 
-function resolveLive(job: LiveJobOpening): ResolvedJob {
+function resolveLive(job: LiveJobOpening, lang: Language): ResolvedJob {
   return {
     routeId: `live-${job.id}`,
     title: job.title,
     department: '',
     location: (job.sites || []).map((s) => s.name).filter(Boolean).join(' • '),
-    contractType: '',
+    contractType: [
+      employmentTypeLabel(job.employment_type, lang),
+      formatLiveSalary(job),
+    ].filter(Boolean).join(' • ') || '',
     description: job.description,
     reference: `EQX-${job.id}`,
     opensAt: job.opens_at,
@@ -73,7 +76,7 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
   let resolved: ResolvedJob | null = null;
   if ('liveId' in parsed) {
     const found = feed?.jobs.find((j) => j.id === parsed.liveId) ?? null;
-    resolved = found ? resolveLive(found) : null;
+    resolved = found ? resolveLive(found, currentLang) : null;
   } else if (parsed.slug) {
     const found = JOB_VACANCIES[currentLang].find((v) => v.id === parsed.slug) ?? null;
     resolved = found ? resolveStatic(found) : null;
@@ -162,7 +165,7 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
                   {[resolved.opensAt, resolved.closesAt].filter(Boolean).join(' — ')}
                 </p>
               )}
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
                   onClick={() => navigate(`/candidatura/${resolved!.routeId}`)}
@@ -171,6 +174,17 @@ export const JobDetailPage: React.FC<JobDetailPageProps> = ({ currentLang }) => 
                   <span>{t.careers.applyNow}</span>
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
+                {resolved.liveJob?.url ? (
+                  <a
+                    href={resolved.liveJob.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-epilogue font-bold text-[#4cd7f6] hover:text-[#06b6d4] hover:underline transition-all"
+                  >
+                    <span>Ver no Chegatta</span>
+                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                  </a>
+                ) : null}
               </div>
             </div>
           </article>

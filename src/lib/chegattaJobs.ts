@@ -4,22 +4,45 @@
  * Powers the live vacancies list and real applications on this site.
  * Configuration (all optional):
  *   VITE_CHEGATTA_API_URL     base URL, defaults to the live platform
- *   VITE_EQX_BUSINESS_TOKEN   the business public token (businesses.qr_code).
- *                             When empty, the site runs in static preview mode
- *                             (hardcoded vacancies, no network applications).
+ *   VITE_EQX_BUSINESS_TOKEN   the business public token. Prefer the dedicated
+ *                             careers token (businesses.careers_token, shown
+ *                             in Admin → Job openings → Public careers card);
+ *                             the legacy businesses.qr_code keeps working as
+ *                             a deprecated fallback. When empty, the site
+ *                             runs in static preview mode (hardcoded
+ *                             vacancies, no network applications).
  *
  * CORS is open on the platform side for /api/v1/public/* from any origin.
  */
+
+import { useEffect, useState } from 'react';
+import { Language } from '../types';
 
 export interface LiveJobSite {
   id: number;
   name: string | null;
 }
 
+export type LiveEmploymentType =
+  | 'full_time'
+  | 'part_time'
+  | 'contract'
+  | 'temporary'
+  | 'intern'
+  | 'seasonal'
+  | 'per_diem';
+
 export interface LiveJobOpening {
   id: number;
   title: string;
   description: string | null;
+  /** Hosted, SEO-friendly posting page (JobPosting JSON-LD) on Chegatta. */
+  url?: string;
+  employment_type?: LiveEmploymentType | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_period?: string | null;
+  salary_currency?: string | null;
   site_ids: number[];
   sites?: LiveJobSite[];
   opens_at: string | null;
@@ -31,6 +54,9 @@ export interface LiveJobOpening {
 
 export interface LiveFeed {
   business: { name: string; logo: string | null };
+  page?: number;
+  limit?: number;
+  total?: number;
   jobs: LiveJobOpening[];
 }
 
@@ -48,7 +74,6 @@ export interface ApplicationResult {
   stage: string;
 }
 
-import { useEffect, useState } from 'react';
 
 /**
  * Shared live-feed state for job pages. In static preview mode (no token)
@@ -153,6 +178,55 @@ export function isLiveMode(): boolean {
   return getBusinessToken().length > 0;
 }
 
+const EMPLOYMENT_TYPE_LABELS: Record<Language, Record<NonNullable<LiveEmploymentType>, string>> = {
+  pt: {
+    full_time: 'Tempo inteiro',
+    part_time: 'Tempo parcial',
+    contract: 'Contrato',
+    temporary: 'Temporário',
+    intern: 'Estágio',
+    seasonal: 'Sazonal',
+    per_diem: 'Diário',
+  },
+  en: {
+    full_time: 'Full time',
+    part_time: 'Part time',
+    contract: 'Contract',
+    temporary: 'Temporary',
+    intern: 'Internship',
+    seasonal: 'Seasonal',
+    per_diem: 'Per diem',
+  },
+};
+
+export function employmentTypeLabel(type: LiveEmploymentType | null | undefined, lang: Language): string | null {
+  if (!type) return null;
+  const labels = EMPLOYMENT_TYPE_LABELS[lang] ?? EMPLOYMENT_TYPE_LABELS.en;
+  return labels[type] ?? null;
+}
+
+/** Human salary summary for the posting card/detail, null when unknown. */
+export function formatLiveSalary(job: LiveJobOpening): string | null {
+  const currency = job.salary_currency || 'EUR';
+  const fmt = (v: number) => new Intl.NumberFormat('pt-PT', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(v);
+  const per = job.salary_period === 'hour' ? '/h' : '/mês';
+
+  if (job.salary_min != null && job.salary_max != null && job_salary_spread(job) > 0) {
+    return `${fmt(job.salary_min)} – ${fmt(job.salary_max)}${per}`;
+  }
+  if (job.salary_min != null) return `${fmt(job.salary_min)}${per}`;
+  if (job.salary_max != null) return `${fmt(job.salary_max)}${per}`;
+  return null;
+}
+
+function job_salary_spread(job: LiveJobOpening): number {
+  return (job.salary_max ?? 0) - (job.salary_min ?? 0);
+}
+
 async function readError(res: Response): Promise<JobsApiError> {
   let message = `Request failed (${res.status}).`;
   let fields: Record<string, string[]> = {};
@@ -185,6 +259,9 @@ export async function fetchOpenings(signal?: AbortSignal): Promise<LiveFeed> {
   const body = await res.json();
   return {
     business: body.business || { name: '', logo: null },
+    page: typeof body.page === 'number' ? body.page : undefined,
+    limit: typeof body.limit === 'number' ? body.limit : undefined,
+    total: typeof body.total === 'number' ? body.total : undefined,
     jobs: Array.isArray(body.jobs) ? body.jobs : [],
   };
 }

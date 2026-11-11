@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
 import { TRANSLATIONS, JOB_VACANCIES } from '../data/content';
 import {
+  employmentTypeLabel,
   fetchOpenings,
+  formatLiveSalary,
   isLiveMode,
   type LiveJobOpening,
 } from '../lib/chegattaJobs';
@@ -61,7 +63,10 @@ export const RecruitmentSection: React.FC<RecruitmentSectionProps> = ({
       title: job.title,
       department: '',
       location: (job.sites || []).map((s) => s.name).filter(Boolean).join(' • '),
-      contractType: '',
+      contractType: [
+        employmentTypeLabel(job.employment_type, currentLang),
+        formatLiveSalary(job),
+      ].filter(Boolean).join(' • ') || '',
       status: (currentLang === 'pt' ? 'Ativa' : 'Active') as 'Ativa' | 'Active',
     }))
     : JOB_VACANCIES[currentLang].map((v) => ({
